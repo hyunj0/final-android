@@ -1,11 +1,18 @@
 package nyc.c4q.android;
 
 import android.app.Application;
+import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.support.v4.app.NotificationCompat;
+
+import nyc.c4q.android.model.Email;
 import nyc.c4q.android.rest.FakeEmailService;
+import nyc.c4q.android.ui.EmailDetailActivity;
 
 public class EmailApplication extends Application {
   public static final int EMAIL_POLL_IN_SEC = 5;
@@ -23,7 +30,7 @@ public class EmailApplication extends Application {
     super.onCreate();
 
     // TODO - finish this
-    notificationManager = null;
+    notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
     handlerThread = new HandlerThread("email-timer");
     handlerThread.start();
@@ -40,6 +47,18 @@ public class EmailApplication extends Application {
           // b) use R.string.you_got_email as title
           // c) use R.string.notification_email_from (accounting for who sent the email)
           // d) when user clicks on notification, go to EmailDetailActivity
+
+            Intent resultIntent = new Intent(getApplicationContext(), EmailDetailActivity.class);
+            PendingIntent resultPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            Email email = emailService.getEmails().get(0);
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
+            builder.setSmallIcon(R.drawable.c4q);
+            builder.setContentTitle("You got mail!");
+            builder.setContentText("From " + email.getFrom());
+            builder.setContentIntent(resultPendingIntent);
+            Notification notification = builder.build();
+            notificationManager.notify(1, notification);
 
         }
 
